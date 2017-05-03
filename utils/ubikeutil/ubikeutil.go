@@ -3,6 +3,7 @@ package ubikeutil
 import (
 	"log"
 	"strconv"
+	"sync"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
@@ -108,7 +109,7 @@ var logFatalf = log.Fatalf
 
 // LoadUbikeInfo : load remote ubike api data
 func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.StationErrno) {
-	var collect []ubike.Station
+	collect := []ubike.Station{}
 	errno := ubike.Ok
 	endpointTimeout := time.Duration(time.Duration(timeout) * time.Second)
 	json := fetchAPIData(endpoint, endpointTimeout).(*simplejson.Json)
@@ -120,44 +121,47 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 	}
 
 	dataset := json.Get("retVal").MustMap()
+
+	wgStation := make(chan ubike.Station)
+	var wg sync.WaitGroup
+	wg.Add(len(dataset))
+
 	for _, item := range dataset {
-		ele := item.(map[string]interface{})
-		if ele["act"] == "1" && ele["sbi"] != "0" {
-			sbi, err := strconv.Atoi(ele["sbi"].(string))
-			if err != nil {
-				return []ubike.Station{}, ubike.SystemError
-			}
-			lat, err := strconv.ParseFloat(ele["lat"].(string), 64)
-			if err != nil {
-				return []ubike.Station{}, ubike.SystemError
-			}
-			lng, err := strconv.ParseFloat(ele["lng"].(string), 64)
-			if err != nil {
-				return []ubike.Station{}, ubike.SystemError
-			}
-			mdaylayout := "20060102150405"
-			updated, err := time.Parse(mdaylayout, ele["mday"].(string))
-			if err != nil {
-				return []ubike.Station{}, ubike.SystemError
-			}
+		go func(item interface{}) {
+			defer wg.Done()
+			ele := item.(map[string]interface{})
+			if ele["act"] == "1" && ele["sbi"] != "0" {
+				sbi, _ := strconv.Atoi(ele["sbi"].(string))
+				lat, _ := strconv.ParseFloat(ele["lat"].(string), 64)
+				lng, _ := strconv.ParseFloat(ele["lng"].(string), 64)
+				mdaylayout := "20060102150405"
+				updated, _ := time.Parse(mdaylayout, ele["mday"].(string))
+				full := false
+				if ele["bemp"] == "0" {
+					full = true
+				}
+				station := ubike.Station{
+					ID:         ele["sno"].(string),
+					Name:       ele["sna"].(string),
+					Lat:        lat,
+					Lng:        lng,
+					NumUbike:   sbi,
+					IsFull:     full,
+					UpdateTime: updated,
+				}
 
-			full := false
-			if ele["bemp"] == "0" {
-				full = true
+				wgStation <- ubike.Station(station)
 			}
+		}(item)
+	}
 
-			station := ubike.Station{
-				ID:         ele["sno"].(string),
-				Name:       ele["sna"].(string),
-				Lat:        lat,
-				Lng:        lng,
-				NumUbike:   sbi,
-				IsFull:     full,
-				UpdateTime: updated,
-			}
+	go func() {
+		wg.Wait()
+		close(wgStation)
+	}()
 
-			collect = append(collect, station)
-		}
+	for station := range wgStation {
+		collect = append(collect, station)
 	}
 
 	return collect, errno
