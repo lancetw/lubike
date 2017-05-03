@@ -25,7 +25,7 @@ func TestInitConfigWithoutGopath(t *testing.T) {
 
 	InitConfig()
 
-	if len(errors) == 0 {
+	if len(errors) != 0 {
 		t.Fail()
 	}
 }

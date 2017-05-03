@@ -21,13 +21,12 @@ var gopath = os.Getenv("GOPATH")
 // InitConfig : initialize dotenv config
 // *TODO* remove gopath workaround
 func InitConfig() Config {
-	if gopath == "" {
-		logFatalf("GOPATH is missing")
-	}
-	fullpath := gopath + "/src/github.com/lancetw/lubike/.env"
-	err := godotenv.Load(fullpath)
-	if err != nil {
-		logFatalf("Error loading .env file %v", fullpath)
+	if gopath != "" {
+		fullpath := gopath + "/src/github.com/lancetw/lubike/.env"
+		err := godotenv.Load(fullpath)
+		if err != nil {
+			logFatalf("Error loading .env file %v", fullpath)
+		}
 	}
 
 	var config Config
