@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"time"
 
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 	"github.com/lancetw/lubike/utils/ubikeutil"
 )
@@ -33,12 +36,13 @@ func main() {
 	}
 
 	router := gin.New()
+	store := persistence.NewInMemoryStore(time.Minute)
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	v1 := router.Group("/v1")
 	{
-		v1.GET("ubike-station/taipei", lubikeCommonEndpoint)
+		v1.GET("ubike-station/taipei", cache.CachePage(store, 10*time.Second, lubikeCommonEndpoint))
 	}
 
 	router.Run(":" + port)
