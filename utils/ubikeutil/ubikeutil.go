@@ -45,7 +45,7 @@ func IsInCity(latlng geo.LatLng, city string) bool {
 	if err != nil {
 		return status
 	}
-	if address.City == city {
+	if address.State == city || address.City == city {
 		status = true
 	}
 	return status
