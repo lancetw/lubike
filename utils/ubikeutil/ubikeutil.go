@@ -134,20 +134,20 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 				sbi, _ := strconv.Atoi(ele["sbi"].(string))
 				lat, _ := strconv.ParseFloat(ele["lat"].(string), 64)
 				lng, _ := strconv.ParseFloat(ele["lng"].(string), 64)
-				mdaylayout := "20060102150405"
-				updated, _ := time.Parse(mdaylayout, ele["mday"].(string))
+				//mdaylayout := "20060102150405"
+				//updated, _ := time.Parse(mdaylayout, ele["mday"].(string))
 				full := false
 				if ele["bemp"] == "0" {
 					full = true
 				}
 				station := ubike.Station{
-					ID:         ele["sno"].(string),
-					Name:       ele["sna"].(string),
-					Lat:        lat,
-					Lng:        lng,
-					NumUbike:   sbi,
-					IsFull:     full,
-					UpdateTime: updated,
+					ID:       ele["sno"].(string),
+					Name:     ele["sna"].(string),
+					Lat:      lat,
+					Lng:      lng,
+					NumUbike: sbi,
+					IsFull:   full,
+					//UpdateTime: updated,
 				}
 
 				wgStation <- ubike.Station(station)

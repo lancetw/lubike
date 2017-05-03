@@ -2,21 +2,20 @@ package ubike
 
 import (
 	"sort"
-	"time"
 
 	"github.com/lancetw/lubike/geo"
 )
 
 // Station struct
 type Station struct {
-	ID         string    `json:"-"`
-	Name       string    `json:"station"`
-	Lat        float64   `json:"-"`
-	Lng        float64   `json:"-"`
-	Distance   float64   `json:"-"`
-	NumUbike   int       `json:"num_ubike"`
-	IsFull     bool      `json:"-"`
-	UpdateTime time.Time `json:"-"`
+	ID       string  `json:"-"`
+	Name     string  `json:"station"`
+	Lat      float64 `json:"-"`
+	Lng      float64 `json:"-"`
+	Distance float64 `json:"-"`
+	NumUbike int     `json:"num_ubike"`
+	IsFull   bool    `json:"-"`
+	//UpdateTime time.Time `json:"-"`
 }
 
 // ByDistance : implements sort.Interface for []Station based on the

@@ -132,25 +132,6 @@ func TestLoadNearbyUbikesSystemError(t *testing.T) {
 	}
 }
 
-func TestLoadNearbyUbikesSystemErrorDataCorrupted(t *testing.T) {
-	var mockFetchAPIData = func(s string, t time.Duration) interface{} {
-		body, _ := ioutil.ReadFile("./stataions_corrupted.json")
-		data, _ := simplejson.NewJson([]byte(body))
-		return data
-	}
-
-	var origFetchAPIData = fetchAPIData
-	fetchAPIData = mockFetchAPIData
-
-	defer func() { fetchAPIData = origFetchAPIData }()
-
-	_, errno := LoadNearbyUbikes(lat, lng, num)
-
-	if errno != ubike.SystemError {
-		t.Error(errno)
-	}
-}
-
 func TestLoadUbikeInfo(t *testing.T) {
 	config := setting.InitConfig()
 	collect, errno := LoadUbikeInfo(config.UbikeEndpoint, config.UbikeEndpointTimeout)
