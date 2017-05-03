@@ -32,3 +32,14 @@ func TestFetchAPIData(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestPostAPIData(t *testing.T) {
+	config := setting.InitConfig()
+	timeout := time.Duration(time.Duration(config.GoogleMapMatrixEndpointTimeout) * time.Second)
+	values := map[string]interface{}{}
+	json := PostAPIData(config.GoogleMapMatrixEndpoint, timeout, values).(*simplejson.Json)
+	status := json.Get("status").MustString()
+	if status != "INVALID_REQUEST" {
+		t.Error(status)
+	}
+}

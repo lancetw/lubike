@@ -36,12 +36,14 @@ func IsAllStationsFull(stations []ubike.Station) bool {
 	return status
 }
 
+var reverseGeocode = geocoder.ReverseGeocode
+
 // IsInCity : target coordinate is in the city
 func IsInCity(latlng geo.LatLng, city string) bool {
 	status := false
 	config := setting.InitConfig()
 	geocoder.SetAPIKey(config.MapquestAPIKey)
-	address, err := geocoder.ReverseGeocode(latlng.Lat, latlng.Lng)
+	address, err := reverseGeocode(latlng.Lat, latlng.Lng)
 	if err != nil {
 		return status
 	}
@@ -96,6 +98,8 @@ func LoadNearbyUbikes(slat string, slng string, num int) ([]ubike.Station, ubike
 		return ubikeInfo, errno
 	}
 	ubikeInfo = ubike.UpdateDistance(latlng, ubikeInfo)
+	limit := 7
+	ubikeInfo = ubike.UpdateDistanceByRouteMatrix(latlng, ubikeInfo, limit)
 
 	// take number of elements
 	if len(ubikeInfo) >= num {

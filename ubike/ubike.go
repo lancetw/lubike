@@ -1,6 +1,7 @@
 package ubike
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/lancetw/lubike/geo"
@@ -18,8 +19,7 @@ type Station struct {
 	//UpdateTime time.Time `json:"-"`
 }
 
-// ByDistance : implements sort.Interface for []Station based on the
-// Distance field.
+// ByDistance : implements sort.Interface for []Station
 type ByDistance []Station
 
 func (p ByDistance) Len() int      { return len(p) }
@@ -42,5 +42,37 @@ func UpdateDistance(center geo.LatLng, ubikeInfo []Station) []Station {
 	}
 
 	sort.Sort(ByDistance(ubikeInfo))
+
+	return ubikeInfo
+}
+
+// UpdateDistanceByRouteMatrix : update distance field of slice
+func UpdateDistanceByRouteMatrix(center geo.LatLng, ubikeInfo []Station, limit int) []Station {
+	points := []string{}
+	points = append(points, fmt.Sprintf("%f,%f", center.Lat, center.Lng))
+
+	if limit >= 0 && len(ubikeInfo) >= limit {
+		ubikeInfo = ubikeInfo[:limit]
+	}
+
+	for _, item := range ubikeInfo {
+		point := fmt.Sprintf("%f,%f", item.Lat, item.Lng)
+		points = append(points, point)
+	}
+	distance := geo.GoogleMapMatrixProvider(points).RouteMatrix()
+	if len(distance) == 0 {
+		return ubikeInfo
+	}
+
+	for index, dist := range distance {
+		ubikeInfo[index].Distance = dist.(float64)
+	}
+
+	if len(ubikeInfo) >= limit {
+		ubikeInfo = ubikeInfo[:limit]
+	}
+
+	sort.Sort(ByDistance(ubikeInfo))
+
 	return ubikeInfo
 }

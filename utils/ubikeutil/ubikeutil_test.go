@@ -1,11 +1,13 @@
 package ubikeutil
 
 import (
+	"errors"
 	"io/ioutil"
 	"testing"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
+	"github.com/jasonwinn/geocoder"
 	"github.com/lancetw/lubike/geo"
 	"github.com/lancetw/lubike/setting"
 	"github.com/lancetw/lubike/ubike"
@@ -20,6 +22,23 @@ const (
 func TestIsInCity(t *testing.T) {
 	latlng := geo.LatLng{Lat: 25.034153, Lng: 121.568509}
 	if !IsInCity(latlng, "Taipei City") {
+		t.Fail()
+	}
+}
+
+func TestIsInCityCorrupted(t *testing.T) {
+	var mockReverseGeocode = func(Lat float64, Lng float64) (*geocoder.Location, error) {
+		data, _ := geocoder.ReverseGeocode(0, 0)
+		return data, errors.New("err")
+	}
+
+	var origReverseGeocode = reverseGeocode
+	reverseGeocode = mockReverseGeocode
+
+	defer func() { reverseGeocode = origReverseGeocode }()
+
+	latlng := geo.LatLng{Lat: 0, Lng: 0}
+	if IsInCity(latlng, "Taipei City") {
 		t.Fail()
 	}
 }

@@ -1,6 +1,7 @@
 package setting
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -49,6 +50,33 @@ func TestInitConfig(t *testing.T) {
 	InitConfig()
 
 	if len(errors) != 0 {
+		t.Fail()
+	}
+}
+
+func TestInitConfigError(t *testing.T) {
+	origLogFatalf := logFatalf
+	origGodotenvLoad := godotenvLoad
+
+	defer func() { logFatalf = origLogFatalf }()
+	defer func() { godotenvLoad = origGodotenvLoad }()
+
+	var errorsInfo []string
+	logFatalf = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errorsInfo = append(errorsInfo, fmt.Sprintf(format, args))
+		} else {
+			errorsInfo = append(errorsInfo, format)
+		}
+	}
+
+	godotenvLoad = func(...string) error {
+		return errors.New("err")
+	}
+
+	InitConfig()
+
+	if len(errorsInfo) == 0 {
 		t.Fail()
 	}
 }
