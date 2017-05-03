@@ -11,6 +11,7 @@ import (
 	e "github.com/lonnblad/negroni-etag/etag"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/rs/cors"
+	cah "github.com/trumanw/negroni-cache"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -56,5 +57,6 @@ func main() {
 	n.Use(c)
 	n.UseHandler(v1outes)
 	n.Use(e.Etag())
+	n.Use(cah.NewMiddleware(cah.NewMemoryCache()))
 	n.Run(":" + port)
 }

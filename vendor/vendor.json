@@ -171,6 +171,12 @@
 			"revisionTime": "2016-06-18T19:32:21Z"
 		},
 		{
+			"checksumSHA1": "PliX8Op1wqXLQ5jd2RSgHMYjCIg=",
+			"path": "github.com/trumanw/negroni-cache",
+			"revision": "3e3ba60e37a5646efd47c5e8dad8fcf2acd0ab00",
+			"revisionTime": "2016-12-24T17:28:58Z"
+		},
+		{
 			"checksumSHA1": "XQ2GsdTmZgUO2xycRg02vxBYi50=",
 			"path": "github.com/unrolled/render",
 			"revision": "50716a0a853771bb36bfce61a45cdefdb98c2e6e",
