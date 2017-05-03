@@ -5,24 +5,31 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"time"
 
-	"github.com/gin-contrib/cache"
-	"github.com/gin-contrib/cache/persistence"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/lancetw/lubike/utils/ubikeutil"
+	e "github.com/lonnblad/negroni-etag/etag"
+	"github.com/phyber/negroni-gzip/gzip"
+	"github.com/rs/cors"
+	"github.com/unrolled/render"
+	"github.com/urfave/negroni"
 )
 
-func lubikeCommonEndpoint(c *gin.Context) {
-	lat := c.Query("lat")
-	lng := c.Query("lng")
-	num := 2
-	result, errno := ubikeutil.LoadNearbyUbikes(lat, lng, num)
+var r = render.New()
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":   errno,
-		"result": result,
-	})
+func lubikeCommonEndpoint(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "GET" {
+		lat := req.FormValue("lat")
+		lng := req.FormValue("lng")
+
+		num := 2
+		result, errno := ubikeutil.LoadNearbyUbikes(lat, lng, num)
+
+		r.JSON(w, http.StatusOK, map[string]interface{}{
+			"code":   errno,
+			"result": result,
+		})
+	}
 }
 
 func main() {
@@ -34,16 +41,20 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	})
 
-	router := gin.New()
-	store := persistence.NewInMemoryStore(time.Minute)
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	n.Use(negroni.NewLogger())
+	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	v1 := router.Group("/v1")
-	{
-		v1.GET("ubike-station/taipei", cache.CachePage(store, 10*time.Second, lubikeCommonEndpoint))
-	}
+	v1outes := mux.NewRouter().PathPrefix("/v1").Subrouter().StrictSlash(true)
+	v1outes.HandleFunc("/ubike-station/taipei", lubikeCommonEndpoint)
 
-	router.Run(":" + port)
+	n.Use(c)
+	n.UseHandler(v1outes)
+	n.Use(e.Etag())
+	n.Run(":" + port)
 }
