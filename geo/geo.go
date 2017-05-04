@@ -68,7 +68,6 @@ func (p Provider) RouteMatrix() []interface{} {
 			}
 			data = append(data, dist)
 		}
-		break
 	case "googlemap":
 		jsonData := commonutil.FetchAPIData(p.url, timeout).(*simplejson.Json)
 		rows := jsonData.Get("rows").MustArray()
@@ -88,9 +87,6 @@ func (p Provider) RouteMatrix() []interface{} {
 			}
 			data = append(data, dist)
 		}
-		break
-	default:
-		break
 	}
 	return data
 }
