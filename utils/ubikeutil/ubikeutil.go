@@ -139,17 +139,25 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 				sbi, err := strconv.Atoi(ele["sbi"].(string))
 				if err != nil {
 					wgErr <- err
+					return
 				}
 				lat, err := strconv.ParseFloat(ele["lat"].(string), 64)
 				if err != nil {
 					wgErr <- err
+					return
 				}
 				lng, err := strconv.ParseFloat(ele["lng"].(string), 64)
 				if err != nil {
 					wgErr <- err
+					return
 				}
-				//mdaylayout := "20060102150405"
-				//updated, err := time.Parse(mdaylayout, ele["mday"].(string))
+				/*
+						mdaylayout := "20060102150405"
+					  updated, err := time.Parse(mdaylayout, ele["mday"].(string))
+						if err != nil {
+							wgErr <- err
+							return
+						}*/
 				full := false
 				if ele["bemp"] == "0" {
 					full = true

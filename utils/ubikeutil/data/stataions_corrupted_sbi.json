@@ -1,0 +1,21 @@
+{
+	"retCode": 1,
+	"retVal": {
+		"0001": {
+			"sno": "0001",
+			"sna": "[corrupted] 捷運市政府站(3號出口)",
+			"tot": "180",
+			"sbi": "[corrupted]",
+			"sarea": "信義區",
+			"mday": "20170503172943",
+			"lat": "25.0408578889",
+			"lng": "121.567904444",
+			"ar": "忠孝東路\/松仁路(東南側)",
+			"sareaen": "Xinyi Dist.",
+			"snaen": "MRT Taipei City Hall Stataion(Exit 3)-2",
+			"aren": "The S.W. side of Road Zhongxiao East Road & Road Chung Yan.",
+			"bemp": "86",
+			"act": "1"
+		}
+	}
+}
