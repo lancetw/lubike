@@ -127,6 +127,7 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 	dataset := json.Get("retVal").MustMap()
 
 	wgStation := make(chan ubike.Station)
+	wgErr := make(chan error, 1)
 	var wg sync.WaitGroup
 	wg.Add(len(dataset))
 
@@ -135,11 +136,20 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 			defer wg.Done()
 			ele := item.(map[string]interface{})
 			if ele["act"] == "1" && ele["sbi"] != "0" {
-				sbi, _ := strconv.Atoi(ele["sbi"].(string))
-				lat, _ := strconv.ParseFloat(ele["lat"].(string), 64)
-				lng, _ := strconv.ParseFloat(ele["lng"].(string), 64)
+				sbi, err := strconv.Atoi(ele["sbi"].(string))
+				if err != nil {
+					wgErr <- err
+				}
+				lat, err := strconv.ParseFloat(ele["lat"].(string), 64)
+				if err != nil {
+					wgErr <- err
+				}
+				lng, err := strconv.ParseFloat(ele["lng"].(string), 64)
+				if err != nil {
+					wgErr <- err
+				}
 				//mdaylayout := "20060102150405"
-				//updated, _ := time.Parse(mdaylayout, ele["mday"].(string))
+				//updated, err := time.Parse(mdaylayout, ele["mday"].(string))
 				full := false
 				if ele["bemp"] == "0" {
 					full = true
@@ -164,8 +174,15 @@ func LoadUbikeInfo(endpoint string, timeout int) ([]ubike.Station, ubike.Station
 		close(wgStation)
 	}()
 
-	for station := range wgStation {
-		collect = append(collect, station)
+	select {
+	case <-wgStation:
+		for station := range wgStation {
+			collect = append(collect, station)
+		}
+	case err := <-wgErr:
+		if err != nil {
+			errno = ubike.SystemError
+		}
 	}
 
 	return collect, errno

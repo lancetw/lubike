@@ -106,7 +106,7 @@ func TestLoadNearbyUbikesInvalidLatLng(t *testing.T) {
 
 func TestLoadNearbyUbikesFull(t *testing.T) {
 	var mockFetchAPIData = func(s string, t time.Duration) interface{} {
-		body, _ := ioutil.ReadFile("./stataions_full.json")
+		body, _ := ioutil.ReadFile("./data/stataions_full.json")
 		data, _ := simplejson.NewJson([]byte(body))
 		return data
 	}
@@ -134,7 +134,26 @@ func TestLoadNearbyUbikesGivenLocationNotInTaipeiCity(t *testing.T) {
 
 func TestLoadNearbyUbikesSystemError(t *testing.T) {
 	var mockFetchAPIData = func(s string, t time.Duration) interface{} {
-		body, _ := ioutil.ReadFile("./stataions_noret.json")
+		body, _ := ioutil.ReadFile("./data/stataions_noret.json")
+		data, _ := simplejson.NewJson([]byte(body))
+		return data
+	}
+
+	var origFetchAPIData = fetchAPIData
+	fetchAPIData = mockFetchAPIData
+
+	defer func() { fetchAPIData = origFetchAPIData }()
+
+	_, errno := LoadNearbyUbikes(lat, lng, num)
+
+	if errno != ubike.SystemError {
+		t.Error(errno)
+	}
+}
+
+func TestLoadNearbyUbikesSystemErrorWithCorruptedData(t *testing.T) {
+	var mockFetchAPIData = func(s string, t time.Duration) interface{} {
+		body, _ := ioutil.ReadFile("./data/stataions_corrupted.json")
 		data, _ := simplejson.NewJson([]byte(body))
 		return data
 	}
