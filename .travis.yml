@@ -8,6 +8,6 @@ go:
 install:
   - go get -u github.com/kardianos/govendor
 script:
-  - coverage.sh
+  - sh coverage.sh
 after_success:
   - bash <(curl -s https://codecov.io/bash) -f coverage.out
