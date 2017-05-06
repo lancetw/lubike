@@ -2,7 +2,10 @@ language: go
 
 go:
   - 1.7.x
+  - 1.8.x
 install:
   - go get -u github.com/kardianos/govendor
 script:
-  - make test
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
