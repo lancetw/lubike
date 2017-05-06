@@ -22,11 +22,12 @@ type Config struct {
 
 var logFatalf = log.Fatalf
 var gopath = os.Getenv("GOPATH")
+var testingMode = os.Getenv("TESTING")
 var godotenvLoad = godotenv.Load
 
 // InitConfig : initialize dotenv config
 func InitConfig() Config {
-	if gopath != "" {
+	if !(testingMode == "true") && gopath != "" {
 		fullpath := gopath + "/src/github.com/lancetw/lubike/.env"
 		err := godotenvLoad(fullpath)
 		if err != nil {

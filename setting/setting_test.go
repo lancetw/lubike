@@ -55,11 +55,14 @@ func TestInitConfig(t *testing.T) {
 }
 
 func TestInitConfigError(t *testing.T) {
+	origTestingMode := testingMode
+	testingMode = ""
 	origLogFatalf := logFatalf
 	origGodotenvLoad := godotenvLoad
 
 	defer func() { logFatalf = origLogFatalf }()
 	defer func() { godotenvLoad = origGodotenvLoad }()
+	defer func() { testingMode = origTestingMode }()
 
 	var errorsInfo []string
 	logFatalf = func(format string, args ...interface{}) {
